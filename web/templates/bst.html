@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bootstrap Tag Input Example</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <style>
+    .tag-container {
+      max-width: 500px;
+      margin: auto;
+    }
+    .tag-input {
+      max-width: 300px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container tag-container">
+  <div class="input-group mb-3">
+    <input type="text" class="form-control tag-input" placeholder="Enter tag" aria-label="Enter tag" aria-describedby="button-addon2">
+    <div class="input-group-append">
+      <button class="btn btn-outline-secondary" type="button" id="button-addon2">Add</button>
+    </div>
+  </div>
+
+  <div id="tags-container">
+    <!-- Tags will be added here -->
+  </div>
+</div>
+
+<script>
+  $(document).ready(function(){
+    $('#button-addon2').click(function(){
+      var tagText = $('.tag-input').val().trim();
+      if (tagText !== '') {
+        var tagElement = $('<span class="badge badge-primary tag-element">' + tagText + '<button type="button" class="close" aria-label="Close"> <span aria-hidden="true">&times;</span></button></span>');
+        $('#tags-container').append(tagElement);
+        tagElement.find('button').click(function(){
+          $(this).parent().remove();
+        });
+      }
+      $('.tag-input').val('');
+    });
+  });
+</script>
+
+</body>
+</html>

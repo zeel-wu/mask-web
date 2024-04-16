@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Processing Result</title>
+    <style>
+        body {
+            background-color: #E0EAF0;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 30px;
+            color: #0066CC;
+            font-size: 24px;
+        }
+
+        table {
+            width: 80%;
+            margin: 30px auto;
+            border-collapse: collapse;
+            background-color: white;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #CCCCCC;
+        }
+
+        th {
+            background-color: #0066CC;
+            color: white;
+        }
+
+        button {
+            display: block;
+            margin: 30px auto;
+            padding: 10px 20px;
+            background-color: #0066CC;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0052A3;
+        }
+
+    </style>
+    <script src={{url_for('static',filename='js/jquery-3.6.0.min.js')}}></script>
+    <script>
+        $(document).ready(function() {
+            var task_id = {{ task_id }};
+            var interval = setInterval(function() {
+                $.ajax({
+                    url: '/check-task/' + task_id,
+                    success: function(data) {
+                        if (data.status == 'completed') {
+                            clearInterval(interval);
+                            $('#result').text('脱敏后的文件: ' + data.file_name);
+                            // 下载已处理的文件
+                            window.location.href = '/download/' + data.file_name;
+                        }
+                        if (data.status == 'error') {
+                            clearInterval(interval);
+                            $('#result').text('处理失败: ' + data.file_name);
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        clearInterval(interval);
+                        $('#result').text('Error occurred: ' + errorThrown);
+                        // 可以执行其他错误处理操作
+                    }
+                });
+            }, 3000);
+        });
+    </script>
+</head>
+<body>
+    <h1>文件脱敏</h1>
+    <p>任务 ID: {{ task_id }}</p>
+    <p id="result">处理中...</p>
+    <p>如文件过大请耐心等待，脱敏成功后会自动下载</p>
+</body>
+</html>

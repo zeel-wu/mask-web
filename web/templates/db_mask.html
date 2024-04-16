@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<head>
+    <title>配置远程数据库</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        form {
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .sensitive {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>数据库脱敏</h1>
+
+    <form action="/db/mask" enctype="multipart/form-data" method="post">
+        <label for="host">主机名：</label>
+        <input type="text" id="host" name="host" placeholder="数据库主机名*" required>
+
+        <label for="port">端口：</label>
+        <input type="text" id="port" name="port" placeholder="数据库端口号*" required>
+
+        <label for="username">用户名：</label>
+        <input type="text" id="username" name="username" placeholder="数据库用户名*" required>
+
+        <label for="password">密码：</label>
+        <input type="password" id="password" name="password" placeholder="数据库密码*" required>
+
+        <label for="db">库名：</label>
+        <input type="text" id="db" name="db" placeholder="数据库名称*" required>
+
+        <label for="table">表名：</label>
+        <input type="text" id="table" name="table" placeholder="数据库表名(可不填，不填会扫描所有表)">
+
+        <input type="submit">
+
+    </form>
+</body>
+</html>

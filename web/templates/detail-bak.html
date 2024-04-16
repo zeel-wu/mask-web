@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>展示页</title>
+    <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+
+    <style>
+    .tag-container {
+          max-width: 500px;
+          margin: auto;
+        }
+        .tag-input {
+          max-width: 300px;
+        }
+        body {
+            background-color: #E0EAF0;
+        }
+
+        h1 {
+            margin-top: 30px;
+            color: #0066CC;
+            font-size: 24px;
+        }
+
+        table {
+            width: 80%;
+            margin: 30px auto;
+            border-collapse: collapse;
+            background-color: white;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #CCCCCC;
+        }
+
+        th {
+            background-color: #0066CC;
+            color: white;
+        }
+
+        button {
+            display: block;
+            margin: 30px auto;
+            padding: 10px 20px;
+            background-color: #0066CC;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0052A3;
+        }
+
+        .pagination-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .pagination {
+            display: inline-block;
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .page-item {
+            display: inline;
+            margin: 0 5px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+
+        .page-item.active {
+            background-color: #ccc;
+            color: #fff;
+            border: 1px solid #666;
+        }
+
+        .page-item.disabled {
+            color: #ccc;
+        }
+
+
+
+    </style>
+</head>
+<body>
+<div style="text-align: center;">
+    <h1>信息展示</h1>
+    <table id="lazyload-table">
+        <thead>
+        <tr>
+            <th>库名</th>
+            <th>表名</th>
+            <th>主键名</th>
+            <th>字段名</th>
+            <th>字段内容</th>
+            <th>敏感内容</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody id="lazyload-tbody">
+        {% for d in data %}
+        <tr>
+            <td>{{ d['db'] }}</td>
+            <td>{{ d['table'] }}</td>
+            <td>{{ d['primary_key'] }}</td>
+            <td>{{ d['column'] }}</td>
+            <td>{{ d['contents']|highlight_sensitive_data(d['sensitive_data']) }}</td>
+            <td>{{ d['sensitive_data'] }}</td>
+            <td style="width: 200px;">
+
+                {% for action in d['sensitive_data'] %}
+                <span>{{action}} </span><span><a
+                    href="{{ url_for('check_mask', primary_id=d['primary_key'],column=d['column'],content=action) }}"
+                    onclick="removeTag(this) " >[X]</a><br/></span>
+                {% endfor %}
+            </td>
+
+        </tr>
+        {% endfor %}
+
+        </tbody>
+    </table>
+    <p></p>
+    <div class="comment-author"><a href="{{ url_for('download_file')}}" >导出为Excel</a></div>
+    <p></p>
+    <div class="comment-encrypt"><a href="{{ url_for('db_encrypt', filename=filename) }}">点击开始脱敏</a></div>
+
+</div>
+<script>
+    function removeTag(element) {
+        element.parentNode.parentNode.remove();
+    }
+</script>
+</body>
+</html>

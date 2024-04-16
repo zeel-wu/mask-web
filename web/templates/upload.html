@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>上传下载文件</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #181818;
+            padding: 20px;
+            color: #fff;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 30px;
+            color: #ffd700;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .form-group input[type="file"] {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 3px;
+            color: #fff;
+        }
+
+        .form-group button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #ffd700;
+            color: #000;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .form-group button:hover {
+            background-color: #f9f900;
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                max-width: 100%;
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .form-group input[type="file"],
+            .form-group button {
+                font-size: 14px;
+                padding: 8px;
+            }
+        }
+    </style>
+    <link href={{url_for('static',filename='js/filepond.css')}} rel="stylesheet">
+    <script src={{url_for('static',filename='js/filepond.js')}}></script>
+</head>
+<body>
+<div class="container">
+    <h1>敏感数据发现</h1>
+    <form action="/file/mask" enctype="multipart/form-data" method="post">
+        <div class="form-group">
+            <label for="file">选择文件(支持多个文件，文件大小建议不超过5M)</label>
+<!--            <input type="file" id="file_upload" name="file" required >-->
+            <input type="file" id="file_upload" name="file" required  multiple  data-max-file-size="100MB" accept="*/*">
+        </div>
+        <div class="form-group">
+            <button type="submit">上传</button>
+        </div>
+        <p>支持'xlsx', 'xls', 'csv', 'txt', 'sql', 'json', 'log', 'py'</p>
+    </form>
+</div>
+</body>
+</html>

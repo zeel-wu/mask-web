@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import re
 from phone import Phone
 from itertools import groupby
@@ -314,6 +315,7 @@ class Extractor(object):
         if text == '':
             return []
         seg_list = self.seg_list
+        print(seg_list)
         names = set()
 
         for index, ele_tup in enumerate(seg_list):
@@ -358,7 +360,6 @@ class Extractor(object):
         pattern = re.compile('|'.join(chinese_surnames))
         results = [r for r in names if
                    re.match(pattern=pattern, string=str(r)) and 1 < len(r) <= 3 and r not in medical_name_set]
-        # logging.info(ele_tup[0],ele_tup[1])
         return results
 
     def most_common(self, content_list):
@@ -396,3 +397,10 @@ class Extractor(object):
     def has_numbers(input_string):
         return bool(re.search(r'\d', input_string))
 
+
+if __name__ == '__main__':
+
+    text = '诊断:1.肺恶性肿瘤IV期PS评分:1分。2,肺继发恶性肿瘤3.颈部淋巴结继发恶性肿瘤4.,肺门淋巴结继发恶性肿瘤5,纵隔淋巴结继发恶性肿瘤6,腔隙性脑梗死医师签名:宗丙丙'
+    ex = Extractor(text=text)
+    res = ex.extract_name(text=text)
+    print(res)

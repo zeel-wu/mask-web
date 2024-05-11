@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>配置远程数据库</title>
     <style>
         body {
@@ -14,14 +15,15 @@
         h1 {
             color: #333;
             text-align: center;
+            margin-bottom: 30px;
         }
 
         form {
             max-width: 500px;
             margin: 0 auto;
             background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
+            padding: 30px;
+            border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
@@ -31,8 +33,8 @@
             font-weight: bold;
         }
 
-        input[type="text"], input[type="password"] {
-            width: 100%;
+        select, input[type="text"], input[type="password"] {
+            width: calc(100% - 22px); /* Account for padding and border */
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
@@ -40,19 +42,30 @@
             margin-bottom: 20px;
         }
 
+        select {
+            height: 40px;
+        }
+
         button {
             background-color: #4CAF50;
             color: white;
-            padding: 10px 20px;
+            padding: 12px 20px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
+            width: 100%;
         }
 
         .sensitive {
             color: red;
             font-weight: bold;
+        }
+
+        @media only screen and (max-width: 600px) {
+            form {
+                padding: 20px;
+            }
         }
     </style>
 </head>
@@ -60,6 +73,14 @@
     <h1>数据库脱敏</h1>
 
     <form action="/db/mask" enctype="multipart/form-data" method="post">
+
+        <label for="db_type">数据库类型:</label>
+        <select id="db_type" name="db_type">
+          <option value="mysql">MySQL</option>
+          <option value="postgresql">PostgreSQL</option>
+          <option value="tidb">TiDB</option>
+        </select>
+
         <label for="host">主机名：</label>
         <input type="text" id="host" name="host" placeholder="数据库主机名*" required>
 
@@ -78,7 +99,7 @@
         <label for="table">表名：</label>
         <input type="text" id="table" name="table" placeholder="数据库表名(可不填，不填会扫描所有表)">
 
-        <input type="submit">
+        <button type="submit">提交</button>
 
     </form>
 </body>

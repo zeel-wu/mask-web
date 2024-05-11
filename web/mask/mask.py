@@ -76,7 +76,7 @@ def nlp_find_data_to_file(text):
     if emails:
         results_dict['邮箱'] = emails
     # 抽取手机号
-    cellphones = ex.extract_cellphone(text, nation='CHN')
+    cellphones = ex.extract_cellphone(text)
     # 抽取身份证号
     ids = ex.extract_ids(text)
     if ids:
@@ -206,3 +206,7 @@ def use_future(long_txt):
                 print(e)
 
 
+if __name__ == '__main__':
+    text = '诊断:1.肺恶性肿瘤IV期PS评分:1分。2,肺继发恶性肿瘤3.颈部淋巴结继发恶性肿瘤4.,肺门淋巴结继发恶性肿瘤5,纵隔淋巴结继发恶性肿瘤6,腔隙性脑梗死医师签名:宗丙丙'
+    rr = nlp_find_data_to_file(text)
+    print(rr)

@@ -49,7 +49,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-class DBTool(object):
+class MysqlTool(object):
     default_db = {'information_schema', 'mysql', 'performance_schema', 'sys', 'INFORMATION_SCHEMA',
                   'PERFORMANCE_SCHEMA', 'METRICS_SCHEMA'}
 
@@ -77,7 +77,7 @@ class DBTool(object):
         database_list = self.cursor.fetchall()
         result = []
         for line in database_list:
-            if line[0] not in DBTool.default_db:  # 排除默认的数据库
+            if line[0] not in MysqlTool.default_db:  # 排除默认的数据库
                 result.append(line[0])
         return result
 

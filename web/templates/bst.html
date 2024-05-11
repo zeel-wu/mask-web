@@ -1,52 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Bootstrap Tag Input Example</title>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-  <style>
-    .tag-container {
-      max-width: 500px;
-      margin: auto;
-    }
-    .tag-input {
-      max-width: 300px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配置远程数据库</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        form {
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        select, input[type="text"], input[type="password"] {
+            width: calc(100% - 22px); /* Account for padding and border */
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+
+        select {
+            height: 40px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        .sensitive {
+            color: red;
+            font-weight: bold;
+        }
+
+        @media only screen and (max-width: 600px) {
+            form {
+                padding: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
+    <h1>数据库脱敏</h1>
 
-<div class="container tag-container">
-  <div class="input-group mb-3">
-    <input type="text" class="form-control tag-input" placeholder="Enter tag" aria-label="Enter tag" aria-describedby="button-addon2">
-    <div class="input-group-append">
-      <button class="btn btn-outline-secondary" type="button" id="button-addon2">Add</button>
-    </div>
-  </div>
+    <form action="/db/mask" enctype="multipart/form-data" method="post">
 
-  <div id="tags-container">
-    <!-- Tags will be added here -->
-  </div>
-</div>
+        <label for="db_type">数据库类型:</label>
+        <select id="db_type" name="db_type">
+          <option value="mysql">MySQL</option>
+          <option value="postgresql">PostgreSQL</option>
+          <option value="tidb">TiDB</option>
+        </select>
 
-<script>
-  $(document).ready(function(){
-    $('#button-addon2').click(function(){
-      var tagText = $('.tag-input').val().trim();
-      if (tagText !== '') {
-        var tagElement = $('<span class="badge badge-primary tag-element">' + tagText + '<button type="button" class="close" aria-label="Close"> <span aria-hidden="true">&times;</span></button></span>');
-        $('#tags-container').append(tagElement);
-        tagElement.find('button').click(function(){
-          $(this).parent().remove();
-        });
-      }
-      $('.tag-input').val('');
-    });
-  });
-</script>
+        <label for="host">主机名：</label>
+        <input type="text" id="host" name="host" placeholder="数据库主机名*" required>
 
+        <label for="port">端口：</label>
+        <input type="text" id="port" name="port" placeholder="数据库端口号*" required>
+
+        <label for="username">用户名：</label>
+        <input type="text" id="username" name="username" placeholder="数据库用户名*" required>
+
+        <label for="password">密码：</label>
+        <input type="password" id="password" name="password" placeholder="数据库密码*" required>
+
+        <label for="db">库名：</label>
+        <input type="text" id="db" name="db" placeholder="数据库名称*" required>
+
+        <label for="table">表名：</label>
+        <input type="text" id="table" name="table" placeholder="数据库表名(可不填，不填会扫描所有表)">
+
+        <button type="submit">提交</button>
+
+    </form>
 </body>
 </html>

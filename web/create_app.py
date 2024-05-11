@@ -65,7 +65,13 @@ def download_file():
 
 @app.route('/db/mask', methods=['GET', 'POST'])
 def database_mask():
+
     if request.method == 'POST':
+        print('!!!!!!!!!!!!!!!!request.form')
+        print(request.form)
+        print(request.form['db_type'])
+        print(type(request.form['db_type']))
+        db_type = request.form['db_type']
         host = request.form['host']
         port = request.form['port']
         user = request.form['username']
@@ -73,6 +79,7 @@ def database_mask():
         db = request.form.get('db')
         table = request.form.get("table")
         info = {
+            'db_type': db_type,
             'host': host,
             'port': int(port),
             'user': user,

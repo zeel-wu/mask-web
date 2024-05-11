@@ -1,3 +1,5 @@
+from enum import Enum
+import psycopg2
 import pymysql
 import logging
 
@@ -22,37 +24,63 @@ from web.mask.mask import nlp_find_data_to_db
 """
 
 
-class DBTool(object):
-    default_db = {'information_schema', 'mysql', 'performance_schema', 'sys', 'INFORMATION_SCHEMA',
-                  'PERFORMANCE_SCHEMA', 'METRICS_SCHEMA'}
+class DB(Enum):
+    MYSQL = 'mysql'
+    POSTGRESQL = 'postgresql'
+    TIDB = 'tidb'
 
-    def __init__(self, host, port, user, password, db=None):
 
+class DBManage(object):
+
+    def __init__(self, host, port, user, password, db=None, dtype=''):
         self.host = host
         self.port = port
         self.user = user
         self.password = password
         self.db = db
+        if dtype == DB.MYSQL.value or dtype == DB.TIDB.value:
+            self.db_obj = pymysql.connect(
+                host=self.host,
+                port=self.port,
+                user=self.user,
+                password=self.password,
+                database=self.db,
+                charset='utf8mb4',
+                connect_timeout=3600
+            )
+        elif dtype == DB.POSTGRESQL.value:
+            self.db_obj = psycopg2.connect(
+                host=self.host,
+                port=self.port,
+                user=self.user,
+                password=self.password,
+                database=self.db,
+                connect_timeout=3600
+            )
+        else:
+            raise ValueError('未指定数据库类型！！')
+        self.cursor = self.db_obj.cursor()
 
-        self.db = pymysql.connect(
-            host=self.host,
-            port=self.port,
-            user=self.user,
-            password=self.password,
-            database=self.db,
-            charset='utf8mb4',
-            connect_timeout=3600
-        )
+    def __enter__(self):
+        return self
 
-        self.cursor = self.db.cursor()
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.cursor:
+            self.cursor.close()
+        if self.db_obj:
+            self.db_obj.close()
 
-    #  通过schemata获取所有数据库名称
+
+class MysqlTool(DBManage):
+    default_db = {'information_schema', 'mysql', 'performance_schema', 'sys', 'INFORMATION_SCHEMA',
+                  'PERFORMANCE_SCHEMA', 'METRICS_SCHEMA'}
+
     def get_database(self):
         self.cursor.execute("SELECT schema_name from information_schema.schemata ")
         database_list = self.cursor.fetchall()
         result = []
         for line in database_list:
-            if line[0] not in DBTool.default_db:  # 排除默认的数据库
+            if line[0] not in MysqlTool.default_db:  # 排除默认的数据库
                 result.append(line[0])
         return result
 
@@ -100,7 +128,6 @@ class DBTool(object):
     def count_max(self, column, table):
         sql_count = f"select count(`{column}`) from `{table}`"
         self.cursor.execute(sql_count)
-        self.db.commit()
         count = self.cursor.fetchone()
         logging.info(count[0])
         return count[0]
@@ -188,7 +215,6 @@ class DBTool(object):
         columns = self.get_column(db, table)
         primary_key_index = columns.index(primary_key)
         logging.info(f'primary==={primary_key}')
-        columns.remove(primary_key)
         for contents in self.get_all_contents(db, table, columns, count=int(count)):
             for content_tuple in contents:
                 # content_dict = dict(zip(columns, content_tuple))
@@ -252,3 +278,100 @@ class DBTool(object):
         return msg
 
 
+class PgTool(MysqlTool):
+    def get_database(self):
+        self.cursor.execute("SELECT datname FROM pg_database WHERE datistemplate = false ORDER BY datname;")
+        results = [row[0] for row in self.cursor.fetchall()]
+        return results
+
+    #  获取表名
+    def get_table(self, database):
+        self.cursor.execute(
+            "SELECT table_name FROM information_schema.tables WHERE table_schema='public'")
+        result = [row[0] for row in self.cursor.fetchall()]
+        return result
+
+    #  获取字段名
+    def get_column(self, database, table):
+        self.cursor.execute(f"SELECT column_name FROM information_schema.columns WHERE table_name = '{table}'")
+        column_list = [row[0] for row in self.cursor.fetchall()]
+        return column_list
+
+    #  获取字段内容
+    def get_content(self, database, table, column):
+        # self.cursor.execute("select `%s` from `%s`.`%s` LIMIT 0,1" % (column, database, table))
+        self.cursor.execute("select `%s` from `%s`.`%s`" % (column, database, table))
+        content = self.cursor.fetchall()
+
+        if content:
+            return content[0][0]
+
+    def get_primary_key(self, db, table):
+        find_primary_key_sql = f"SELECT column_name FROM information_schema.key_column_usage WHERE table_name='{table}'"
+        self.cursor.execute(find_primary_key_sql)
+        p_key = [row[0] for row in self.cursor.fetchall()]
+        return p_key[0] if p_key else ''
+
+    def count_max(self, column, table):
+        sql_count = f"SELECT COUNT(*) FROM {table}"
+        self.cursor.execute(sql_count)
+        count = self.cursor.fetchone()
+        logging.info(count[0])
+        return count[0]
+
+    def get_all_contents(self, db, table, db_cols, count=0):
+        strs = ','.join(db_cols)
+        weigh = 100
+        limits = count // weigh
+        if count % weigh != 0:
+            limits += 1
+        for i in range(limits):
+            self.cursor.execute(f"SELECT {strs} FROM {table} LIMIT {weigh} OFFSET {i * weigh}")
+            rows = self.cursor.fetchall()
+            yield rows
+
+    def find_sensitive_data(self, db, table):
+        result = []
+        primary_key = self.get_primary_key(db, table)
+        print(primary_key)
+        count = self.count_max(primary_key, table)
+        print('count')
+        print(count)
+        if not count:
+            return result
+        columns = self.get_column(db, table)
+        primary_key_index = columns.index(primary_key)
+        logging.info(f'primary==={primary_key}')
+        for contents in self.get_all_contents(db, table, columns, count=int(count)):
+            for content_tuple in contents:
+                # content_dict = dict(zip(columns, content_tuple))
+                for index in range(len(content_tuple)):
+                    if content_tuple[index]:
+                        value = str(content_tuple[index])
+                        sensitive_data = nlp_find_data_to_db(value)
+                        if sensitive_data:
+                            target_dict = {
+                                "db": db,  # 表名
+                                "table": table,  # 库名
+                                "primary_key": content_tuple[primary_key_index],  # 主键名
+                                "column": columns[index],  # 列名
+                                "contents": value,  # 对应字段
+                                "sensitive_data": sensitive_data,  # 对应敏感字段
+                            }
+                            # li = [db, table, columns[index], value, ','.join(sensitive_data),
+                            #       content_tuple[primary_key_index]]
+                            # excel_list.append(li)
+                            result.append(target_dict)
+                        else:
+                            continue
+                    else:
+                        continue
+        print('-----------------------')
+        print(result)
+        logging.info(f'find_sensitive_data {table} success')
+        return result
+
+
+if __name__ == '__main__':
+    print(DB.MYSQL.value)
+    print(type(DB.MYSQL.value))

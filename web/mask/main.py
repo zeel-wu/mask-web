@@ -5,7 +5,7 @@ import os
 from web.config import STATIC_PATH
 from web.core.utils import Excel, allowed_file, merge_and_deduplicate
 from web.mask.EXCEL import csv_mask, XlsxExcel, txt_mask, XlsExcel
-from web.mask.db_mask import DBTool
+from web.mask.db_mask import MysqlTool, PgTool
 from web.mask.mask import use_range_to_file
 
 
@@ -169,7 +169,7 @@ class DbManage(object):
     def run(conf):
         db = conf.get('db')
         table = conf.get('table')
-        db_obj = DBTool(
+        db_obj = MysqlTool(
             host=conf.get('host'),
             user=conf.get('user'),
             password=conf.get('password'),
@@ -190,35 +190,51 @@ class DbManage(object):
         host = conf.get('host')
         db = conf.get('db')
         table = conf.get('table')
+        dtype = conf.get('db_type')
         status = True
         try:
-            db_obj = DBTool(
-                host=host,
-                user=conf.get('user'),
-                password=conf.get('password'),
-                port=conf.get('port'),
-                db=db
-            )
+            if dtype == 'mysql' or dtype == 'tidb':
+                db_obj = MysqlTool(
+                    host=host,
+                    user=conf.get('user'),
+                    password=conf.get('password'),
+                    port=conf.get('port'),
+                    db=db,
+                    dtype=dtype
+                )
+            elif dtype == 'postgresql':
+                db_obj = PgTool(
+                    host=host,
+                    user=conf.get('user'),
+                    password=conf.get('password'),
+                    port=conf.get('port'),
+                    db=db,
+                    dtype=dtype
+                )
+            else:
+                db_obj = None
         except Exception as e:
             return False, str(e)
         if not db_obj.db:
             return False, "连接失败"
         if table:
-            result = db_obj.find_sensitive_data(db, table)
+            with db_obj as db_obj:
+                result = db_obj.find_sensitive_data(db, table)
         else:
-            result = []
-            tables = db_obj.get_table(db)
-            logging.info(f'表共有{len(tables)}个 &&&&')
-            for table in tables:
-                logging.info(f'当前 {table} &&&')
-                final = db_obj.find_sensitive_data(db, table)
-                result.extend(final)
+            with db_obj as db_obj:
+                result = []
+                tables = db_obj.get_table(db)
+                logging.info(f'表共有{len(tables)}个 &&&&')
+                for table in tables:
+                    logging.info(f'当前 {table} &&&')
+                    final = db_obj.find_sensitive_data(db, table)
+                    result.extend(final)
         logging.info("find db ending======================")
         return status, result
 
     @staticmethod
     def db_encrypt(conf, data):
-        db_obj = DBTool(
+        db_obj = MysqlTool(
             host=conf.get('host'),
             user=conf.get('user'),
             password=conf.get('password'),
@@ -229,7 +245,8 @@ class DbManage(object):
             msg = "Connection failure！"
         else:
             try:
-                msg = db_obj.db_encrypt(data)
+                with db_obj as db_obj:
+                    msg = db_obj.db_encrypt(data)
             except Exception as e:
                 msg = e
         return msg

@@ -11,6 +11,7 @@ openpyxl
 pandas
 phone
 phonenumbers
+psycopg2
 pycryptodome
 PyMySQL
 requests
